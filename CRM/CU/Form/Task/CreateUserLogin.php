@@ -69,7 +69,7 @@ class CRM_CU_Form_Task_CreateUserLogin extends CRM_Contact_Form_Task {
       // OAP specific, add Provider role to user.
       $user = user_load_by_name($name['name']);
       if ($user) {
-        $user->addRole('Provider');
+        $user->addRole('provider');
         $user->save();
       }
     }
