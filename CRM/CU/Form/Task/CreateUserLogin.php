@@ -65,9 +65,9 @@ class CRM_CU_Form_Task_CreateUserLogin extends CRM_Contact_Form_Task {
         'name' => $name['display_name'],
         'notify' => TRUE,
       ];
-      $ufs[] = CRM_Core_BAO_CMSUser::create($params, 'email');
+      $ufs[] = $ufId = CRM_Core_BAO_CMSUser::create($params, 'email');
       // OAP specific, add Provider role to user.
-      $user = user_load_by_name($name['name']);
+      $user = user_load($ufId);
       if ($user) {
         $user->addRole('provider');
         $user->save();
