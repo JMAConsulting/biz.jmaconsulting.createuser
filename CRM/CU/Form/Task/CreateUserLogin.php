@@ -66,10 +66,16 @@ class CRM_CU_Form_Task_CreateUserLogin extends CRM_Contact_Form_Task {
         'notify' => TRUE,
       ];
       $ufs[] = CRM_Core_BAO_CMSUser::create($params, 'email');
+      // OAP specific, add Provider role to user.
+      $user = user_load_by_name($name['name']);
+      if ($user) {
+        $user->addRole('Provider');
+        $user->save();
+      }
     }
     if (!empty($ufExists)) {
       $message = '<ul><li>' . implode('</li><li>', $ufExists) . '</li></ul>';
-      CRM_Core_Session::singleton()->setStatus(ts("The following contacts already had Drupal user accounts, and thus did not have new ones created for them: %1", array(1 => $message)), 'Cannot Create User login', 'error');
+      CRM_Core_Session::singleton()->setStatus(ts("The following contacts already had Drupal user accounts, or have an invalid email address, and thus did not have accounts created for them: %1", array(1 => $message)), 'Cannot Create User login', 'error');
     }
     if (!empty($noEmail)) {
       $message = '<ul><li>' . implode('</li><li>', $noEmail) . '</li></ul>';
