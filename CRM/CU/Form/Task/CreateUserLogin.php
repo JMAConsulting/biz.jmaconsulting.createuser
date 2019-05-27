@@ -47,7 +47,7 @@ class CRM_CU_Form_Task_CreateUserLogin extends CRM_Contact_Form_Task {
    */
   public function postProcess() {
     foreach ($this->_contactIds as $cid) {
-      $name = CRM_Core_DAO::executeQuery("SELECT LOWER(CONCAT(first_name, '.', last_name)) as name, display_name FROM civicrm_contact WHERE id = %1", [1 => [$cid, "Integer"]])->fetchAll()[0];
+      $name = CRM_Core_DAO::executeQuery("SELECT LOWER(CONCAT(first_name, '.', COALESCE(last_name, $cid))) as name, display_name FROM civicrm_contact WHERE id = %1", [1 => [$cid, "Integer"]])->fetchAll()[0];
       if (self::usernameRule($cid)) {
         $ufExists[] = $name['display_name'];
         continue;
@@ -82,7 +82,7 @@ class CRM_CU_Form_Task_CreateUserLogin extends CRM_Contact_Form_Task {
       CRM_Core_Session::singleton()->setStatus(ts("The following contacts did not have a primary email that was not On Hold, and thus did not have Drupal user accounts created for them: %1", array(1 => $message)), 'Cannot Create User login', 'error');
     }
     if (!empty($ufs)) {
-      CRM_Core_Session::setStatus('', ts('CMS User(s) Added'), 'success');
+      CRM_Core_Session::setStatus('', ts('Drupal User(s) Added'), 'success');
     }
   }
 
