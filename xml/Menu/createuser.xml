@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/create-user-account</path>
+    <page_callback>CRM_CU_Form_CreateUser</page_callback>
+    <title>Create User Account</title>
+    <access_arguments>*always allow*</access_arguments>
+    <is_public>true</is_public>
+  </item>
+</menu>
