@@ -30,6 +30,11 @@ class CRM_CU_Form_CreateUser extends CRM_Core_Form {
     if (!CRM_Contact_BAO_Contact_Utils::validChecksum($this->_contactId, $checksum)) {
       CRM_Core_Error::statusBounce(E::ts("Oops. It looks like you have an incorrect or incomplete link (URL). Please make sure you've copied the entire link, and try again. Contact the site administrator if this error persists."));
     }
+    if (self::userAlreadyHasUserAccount($this->_contactId)) {
+      $userDetails = self::getUserDetails($this->_contactId);
+      CRM_Utils_System::setUFMessage(E::ts('Hi ' . $userDetails['display_name'] . ',  your username is ' . $userDetails['username'] . '.'));
+      CRM_Utils_System::redirect(CRM_Core_Config::singleton()->userSystem->getLoginURL());
+    }
     $params['id'] = $params['contact_id'] = $formDefaults['contactID'] = $this->_contactId;
     $contact = CRM_Contact_BAO_Contact::retrieve($params, $defaults, $ids);
     $this->_email = $contact->email;
@@ -88,6 +93,49 @@ class CRM_CU_Form_CreateUser extends CRM_Core_Form {
       }
     }
     return $elementNames;
+  }
+
+  /**
+   * Determine if a contact already has a uf account
+   */
+  public static function userAlreadyHasUserAccount($contactID): bool {
+    $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM civicrm_uf_match WHERE contact_id = %1 AND domain_id = %2", [1 => [$contactID, 'Positive'], 2 => [CRM_Core_Config::domainID(), 'Positive']]);
+    if (!empty($count)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  public static function getUserDetails($contactID): array {
+    $contact = civicrm_api3('Contact', 'get', ['id' => $contactID])['values'][$contactID];
+    $ufId = CRM_Core_DAO::singleValueQuery("SELECT uf_id FROM civicrm_uf_match WHERE contact_id = %1 AND domain_id = %2", [1 => [$contactID, 'Positive'], 2 => [CRM_Core_Config::domainID(), 'Positive']]);
+    $uf = CRM_Core_Config::singleton()->userFramework;
+    switch ($uf) {
+      case 'Drupal':
+        $user = user_load($ufId);
+        $username = $user->name;
+        break;
+
+      case 'Drupal8':
+        $user = \Drupal::entityManager()->getStorage('user')->load($ufId);
+        $username = $user->name;
+        break;
+
+      case 'WordPress':
+        $user = get_user_by('id', $ufId);
+        $username = $user->user_login;
+        break;
+
+      case 'Joomla':
+        $user = JUser::getInstance($ufID);
+        $username = $user->name;
+        break;
+
+    }
+    return [
+      'username' => $username,
+      'display_name' => $contact['display_name'],
+    ];
   }
 
 }
