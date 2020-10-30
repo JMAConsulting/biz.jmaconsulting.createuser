@@ -148,3 +148,25 @@ function createuser_isTokenRequired($tokens, $group, $token) {
   }
   return FALSE;
 }
+
+if (function_exists('add_filter')) {
+  add_filter('login_message', 'createuser_wp_login_message');
+}
+function createuser_wp_login_message($message) {
+  $action = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : '';
+  $errors = new WP_Error();
+  switch ($action) {
+    case 'register':
+    case 'checkemail':
+    case 'lostpassword':
+      continue;
+
+    default:
+      if (!empty($_REQUEST['createUserRedirect'])) {
+        $message .= '<p class="message">' .__('Hi ' . $_REQUEST['name'] . ',  your username is ' . $_REQUEST['user'] . '.', 'text_domain') . '</p>';
+      }
+      break;
+
+  }
+  return $message;
+}

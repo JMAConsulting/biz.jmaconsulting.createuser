@@ -33,7 +33,7 @@ class CRM_CU_Form_CreateUser extends CRM_Core_Form {
     if (self::userAlreadyHasUserAccount($this->_contactId)) {
       $userDetails = self::getUserDetails($this->_contactId);
       CRM_Utils_System::setUFMessage(E::ts('Hi ' . $userDetails['display_name'] . ',  your username is ' . $userDetails['username'] . '.'));
-      CRM_Utils_System::redirect(CRM_Core_Config::singleton()->userSystem->getLoginURL());
+      CRM_Utils_System::redirect(CRM_Core_Config::singleton()->userSystem->getLoginURL() . '?createUserRedirect=true&name=' . $userDetails['display_name'] . '&user=' . $userDetails['username']);
     }
     $params['id'] = $params['contact_id'] = $formDefaults['contactID'] = $this->_contactId;
     $contact = CRM_Contact_BAO_Contact::retrieve($params, $defaults, $ids);
